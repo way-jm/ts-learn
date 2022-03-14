@@ -1,0 +1,216 @@
+1.为什么要用原型 【好处】
+原型上所有的方法和属性都可以被构造函数【实际开发原型主要共享方法和所有实例公用引用属性】的实例共享，
+那为什么要共享呢？ 先来看一个案例 【先不用管什么是原型】
+
+2.没有用原型会有什么问题?
+总结问题:所有 QQUser 对象【也叫 QQUser 实例】都有相同的好友属性，
+好友属性用 commonfriends 英文表示，所有 QQUser 对象都有相同的 show 方法。
+但我们发现每一个 QQUser对象 【也叫 QQUser 实例】都单独分配一个 commonfriends 属性空间和 show 方法空间，
+浪费了大量内存空间
+
+答案：使用原型解决
+
+实例对象的__proto__指向构造函数的prototype  var son =  new Son()   son.__proto__ ===Son.prototype==>指向同一个原型对象空间
+
+按照JS的数据类型来说,基本数据类型存在栈中,引用类型存在堆中。对象的首地址存在于栈中，
+
+函数也是一个对象，当真正开始执行函数，
+执行环境【开发时为浏览器或控制台】会为函数分配一个函数对象变量空间和函数对象空间，
+函数对象变量用函数名表示，存在栈空间中，
+函数对象空间是在堆中开辟的一个内存空间，这个空间中有一个默认的 prototype 属性，
+这个 prototype 属性就是一个原型对象属性【也叫对象变量】
+
+函数和构造函数的区别
+当通过 new 函数()时，此刻这个函数就是构造函数【 日后会演变成TS 类的构造器】
+
+原型【 prototype ] 是定义函数由 JS 自动分配给函数的一个可以被所有构造函数实例对象变量共享的对象变量【也叫对象属性】
+
+构造函数实例访问一个属性和方法，
+首先从实例空间中查找【当执行环境执行 new 构造函数()时，构造函数中通过 this 定义的属性和方法会分配在这个空间中】，
+如果找到该属性和方法，就停止查找，表示找到了；如果没有找到，
+就继续在该实例的原型对象空间中去查找该属性和方法 【实例中默认的 proto 对象 属性指向原型对象空间】
+
+实例正是借助自身的__ proto __对象属性 来查找原型对象空间中的属性和方法，有点像儿子去和爸爸要他没有的东西一样。
+
+增加或修改原型对象的属性或方法后， 所有的实例或叫对象立即可以访问的到 【但创建实例后再覆盖原型除外】
+
+类
+定义：类就是拥有相同属性和方法的一系列对象的集合，类是一个摸具，
+是从这该类包含的所有具体对象中抽象出来的一个概念，类定义了它所包含的全体对象的静态特征和动态特征。
+
+类有静态特征和动态特征【以大家最熟悉的人类为例】 静态特征【软件界叫属性】姓名，
+年龄,地址,身份证号码,联系方式,家庭地址,微信号 动态特征【软件界叫方法】吃饭，走路
+
+let kateCust=new Customer() kateCust 是对象变量名 ，
+new Customer() 表示 new 出来的是一个Customer对象，而且是运行期间才在堆中分配 Customer 对象的内存空间 【 new 就是分配内存空间的意思】
+
+（4）类的对象变量丶对象内存图展示
+张三是栈内存-->堆内存-->方法，构造函数等是放在__proto__(Person原型的堆内存中)
+
+（5）类的对象变量，对象的关系
+
+类的对象变量存在栈中，对象变量存储着对象的首地址，对象变量通过这个地址找到它的对象
+
+
+
+//  姓名，年龄,地址,身份证号码,联系方式,家庭地址,微信号
+class Person {//属性
+
+  //public  name:string |undefined//typescript4.0之前属性如果没有赋值的解决方法 增加一个undefined数据类型
+  // 类上定义的属性一定是描绘这个类本身特征的变量，不能把一些无关的变量定义成类属性
+  public name: string = "noname"//赋初值为noname
+  public age: number = 0
+  public phone: string = "11111"
+  // 对象的变量=实例的变量=类的【非静态的】属性=简称属性
+  //  实例属性或者对象属性
+
+  constructor(name_: string, age_: number, phone_: string) {//无参构造器
+    this.name = name_;
+    this.age = age_;
+    this.phone = phone_;
+  }
+
+  //function  错误,类中定义方法不能用function
+  // public play(): number {
+  //   //return "df"//不能将类型“string”分配给类型“number”
+  //  // return 3
+
+  // }
+
+  public doEat(who: string, address: string): void {//方法默认的返回值为void
+    console.log(`${this.name}和${who}吃饭,在${address}吃饭`);
+  }
+
+  public doStep() {
+
+  }
+}
+//let zhangSanPerson = new Person();
+//给对象赋值的两种方式
+// 方法1：通过类中属性或者方法来赋值
+// zhangSanPerson.name = "zhangSan"
+// zhangSanPerson.age = 23
+// zhangSanPerson.phone = "134123123"
+
+// zhangSanPerson.doEat("李四", "王府井")
+
+// 方法2： 通过构造函数 【构造器】来赋值
+// 创建对象一共做了三件事
+// 第一件事: 在堆中为类的某个对象【实例】分配一个空间
+// 第二件事：调用对应的构造函数【构造器】并且把构造器中的各个参数值赋值给对象属性
+//   new Person()自动匹配无参数的构造器
+// 第三件事：把对象赋值给对象变量 【把实例赋值给实例变量】
+let zhangSanPerson = new Person("zhangSan", 23, "134123123");
+zhangSanPerson.doEat("李四", "王府井")
+// zhangSanPerson.__proto__  构造函数，doEat。。放在Person的原型上
+console.log(zhangSanPerson)
+//let obj={username:"wangwu",playgame(){}}
+
+// 构造函数的简化写法
+  // 给构造器的参数如果加上public,这个参数就变成了一个属性,
+  //   这种简洁写法是两步综合体： 第一步：定义了一个属性，
+  //   第二步：等于默认构造函数会给这个属性赋值[隐式操作]
+  constructor(public orderId: number, date: Date,
+    custname: string,
+    phone: string, orderDetailArray: Array<OrderDetail>) {
+    // this.orderId = orderId_;
+    // this.date = date_;
+    // this.custname = custname_;
+    // this.phone = phone_
+    // this.orderDetailArray = orderDetailArray_
+  }
+
+// TS4之前针对
+  // 没有初始化的值，也没有在构造函数中明确给这个赋值的一种解决方案
+  // 增加undefined类型就可以
+  public orderDetailId: number | undefined;
+  public productname: string
+  public price!: number  // ts4 之后
+  public count!: number
+
+
+函数重载
+当实现函数中发现某个要素的时候，就去向实现签名去要，所以可选参数的默认值要放在实现签名中
+实现签名参数个数可以少于重载签名的参数个数，但实现签名如果准备包含重载签名的某个位置的参数 ，
+那实现签名就必须兼容所有重载签名该位置的参数类型【联合类型或 any 或 unknown 类型的一种】。
+function getMessage(value: number, myname: string): Message//第一个根据数字id来查询单个消息的重载签名
+function getMessage(value: MessageType, readRecordCount: number): Message[]//第二个根据消息类型来查询消息数组的重载签名
+//function getMessage(value: number | MessageType, readRecordCount: number = 1): Message | undefined | Message[] {
+//function getMessage(value: any, readRecordCount: any = 1): Message | undefined | Message[] {
+//function getMessage(value: any, readRecordCount: any = 1):any {
+//function getMessage(value: any, myname: string = "abc", readRecordCount: any = 1) {
+function getMessage(value: any, value2: any = 1) {
+  //console.log(myname)
+  if (typeof value === "number") {
+    return messages.find((msg) => { return 6 === msg.id })//undefined
+  } else {
+    //return messages.filter((msg) => { return value === msg.type })
+    return messages.filter((msg) => value === msg.type).splice(0, value2)
+  }
+}
+getMessage(1, "df")
+
+单例设计模式
+如果一个类的任何外部通过访问类提供的某个方法或某个属性始终只能获取该类一个对象【实例】，但如果该类提供了多个外部可以访问的方法或属性，那么外部就能访问到该类的多个不同的对象，但从实际开发来看，绝大多数情况的应用场景，我们对外都只提供一个唯一的可以访问的方法或属性，这样就保证了实例为单个，类的这种编写代码的方案【就是设计模式】就是单件设计模式
+比如 我需要创建果汁，苹果汁，西瓜汁，果汁的种类是有限的，比如全球一共有7种果汁。所以我可以通过调用类提供的不同的方法获取不同的对象。
+
+ 构建单件设计模式
+//   第一步：把构造器设置为私有的，不允许外部来创建类的实例【对象】
+//   第二步: 至少应该提供一个外部访问的方法或属性，外部可以通过这个方法或属性来得到一个对象
+//           所以应该把这个方法设置为静态方法
+//   第三步：外部调用第二步提供的静态方法来获取一个对象
+
+//   1. 带static关键字的方法就是一个静态方法
+//   2. 静态方法和对象无关，外部的对象变量不能调用静态方法和静态属性，
+//   3. 外部可以通过类名来调用
+//   静态方法不可以访问实例属性或实例方法【对象属性或对象方法】
+
+继承
+原型链继承实现的本质是改变Son构造函数的原型对象变量的指向【 就是Son.prototype的指向 】，
+Son.prototype= new Parent ( )。
+s = new Son( ) s.__proto__===Son.prototype===p(Parent的实例对象，不是Parent构造函数)，
+s实例对象，Son构造函数--》new Parent 实例对象--》Parent构造函数
+再向上查找，p.__proto__==>Parent.prototype===>Object...
+那么 Son.prototype 可以访问 Parent 对象空间的属性和方法。所以顺着 [proto ]属性 ，Son类也可以访问 Parent 类 的原型对象空间中的所有属性和方法。
+
+原型链继承查找属性和方法的完整路线描述: 子对象首先在自己的对象空间中查找要访问的属性或方法，
+如果找到，就输出，如果没有找到，就沿着子对象中的__proto__属性指向的原型对象空间中去查找有没有这个属性或方法，
+如果找到，就输出，如果没有找到，继续沿着原型对象空间中的__proto__查找上一级原型对象空间中的属性或方法，
+直到找到Object.prototype原型对象属性指向的原型对象空间为止，如果再找不到，就输出null
+
+原型链继承实现容易被遗忘的重要一步
+Son.prototype.constructor = Son
+
+Son.prototype= Parent.prototype x  是不对的，这样会丢失name，age这些实例属性。
+// Son.prototype和Parent.prototype指向同一个空间，谁改都会导致另外一个变化
+而且Son.prototype.constructor = Son  加上这一句，会导致Parent的构造函数指向Son --->导致结果混乱，因为上面一句导致内存的混乱
+
+People.apply(this,[name,sex,phone])
+
+//apply，call，bind的区别
+bind 绑定，并不立即执行,返回一个函数，比如之前react的onclick = {fn.bind(this)} call是参数，apply是一个参数数组
+
+当父类中方法的实现不能满足子类功能需要或不能完全满足子类功能需要时，就需要在子类中进行重写
+  public calculateRent() {//方法重写 [override]
+    // this.safeShow();// 寄生组合继承模式 middle()
+    super.calculateRent();  //=Vechile.prototype.calculateRent.call(this)
+    console.log("Car:", Car.count)
+    console.log("this.brand:", this.brand)
+    return this.days * this.getPriceByType();
+  }
+
+  const car = new Car()
+  先从car对象空间找calculateRent，找不到（因为ts的方法是放在Car.prototype上的  重要。。。。），然后向上查找。。、、
+
+  https://blog.csdn.net/ligang2585116/article/details/53522741
+
+  setPrototypeOf  Object.create  的区别
+  setPrototypeOf可以在不改变原型指向的基础上，保留原型属性，从而简历继承关系
+  function _extends (son, parent) {//继承
+
+    return Object.setPrototypeOf(son.prototype, parent.prototype)
+    //son.prototype.__proto__ = parent.prototype
+    ChinesePeople.prototype.__proto__ = People.prototype
+  }
+
+
